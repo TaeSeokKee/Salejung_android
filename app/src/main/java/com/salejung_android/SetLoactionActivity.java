@@ -1,12 +1,15 @@
 package com.salejung_android;
 
 import android.Manifest;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -15,11 +18,19 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import java.text.DecimalFormat;
 
 public class SetLoactionActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    // why double can't has null value?? So I choose.
+    private double LOCATION_NULL = 9999.9999;
+
     private GoogleMap mMap;
     private static final int MY_LOCATION_REQUEST_CODE = 2;
+
+    // Saved at SharedPreferences.
+    private double mLat = LOCATION_NULL;
+    private double mLng = LOCATION_NULL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +41,30 @@ public class SetLoactionActivity extends FragmentActivity implements OnMapReadyC
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_setLoaction);
         mapFragment.getMapAsync(this);
+
+        // go to next step. (take photo)
+        final Button btn = findViewById(R.id.btn_upload_stage_1);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mLat != LOCATION_NULL && mLng != LOCATION_NULL) {
+                    SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
+                    SharedPreferences.Editor spEditor = sharedPreferences.edit();
+                    DecimalFormat form = new DecimalFormat("#.######");
+                    spEditor.putString("lat", form.format(mLat));
+                    spEditor.putString("lng", form.format(mLng));
+
+                    spEditor.apply();
+
+                    Intent intent = new Intent(SetLoactionActivity.this, PhotoUploadActivity.class);
+                    startActivity(intent);
+                } else {
+                    // TODO :
+                }
+            }
+        });
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -74,6 +108,7 @@ public class SetLoactionActivity extends FragmentActivity implements OnMapReadyC
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
+        // If there is no location permission, try to get location permission.
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
@@ -82,7 +117,7 @@ public class SetLoactionActivity extends FragmentActivity implements OnMapReadyC
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_LOCATION_REQUEST_CODE);
         }
 
-        // set location
+        // set location data. (lat, lng)
         mMap.setOnMapClickListener(new OnMapClickListener()
         {
             @Override
@@ -92,8 +127,14 @@ public class SetLoactionActivity extends FragmentActivity implements OnMapReadyC
                 mMap.addMarker(new MarkerOptions()
                         .position(point));
 
-                // Todo : save lat, lng data
+                mLat = point.latitude;
+                mLng = point.longitude;
             }
         });
+
+        // TODO : Get latest location from device and set to mLat, mLng variables.
+        // There is 2 reason.
+        // First, There is a case that User may touch "next button" at first time. In that case, mLat, mLng have trash values.
+        // Second, For User can find present location more easily.
     }
 }
