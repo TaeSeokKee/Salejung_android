@@ -1,6 +1,5 @@
 package com.salejung_android;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -49,7 +48,7 @@ public class PhotoUploadActivity extends AppCompatActivity {
     private static String uniqueID = null;
     private static final String PREF_UNIQUE_ID = "PREF_UNIQUE_ID";
     static final int REQUEST_TAKE_PHOTO = 1;
-    public static String BASE_URL = "https://salejung.herokuapp.com/photos/api/";
+    public static String BASE_URL = "https://salejung-dev.herokuapp.com/photos/api/";
     String mCurrentPhotoPath = null;
     ImageView imgView = null;
     Uri photoURI = null;
@@ -75,7 +74,7 @@ public class PhotoUploadActivity extends AppCompatActivity {
         });
 
         // if button clicked, upload image and related information.
-        final Button btn = findViewById(R.id.btn);
+        final Button btn = findViewById(R.id.btn_upload_stage_2);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -170,9 +169,10 @@ public class PhotoUploadActivity extends AppCompatActivity {
         params.put("user", user_uuid);
         params.put("price", priceText.getText().toString());
         params.put("detail", detailText.getText().toString());
-        // Todo : lat lng change
-        params.put("lat", "4.4");
-        params.put("lng", "3.3");
+
+        SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
+        params.put("lat", sharedPreferences.getString("lat", "no lat"));
+        params.put("lng", sharedPreferences.getString("lng", "no lng"));
 
         PhotoUploadTask task = new PhotoUploadTask();
         task.execute(params);
