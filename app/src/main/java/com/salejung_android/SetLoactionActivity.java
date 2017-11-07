@@ -1,10 +1,18 @@
 package com.salejung_android;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -13,6 +21,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class SetLoactionActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,10 +29,9 @@ public class SetLoactionActivity extends FragmentActivity implements OnMapReadyC
         setContentView(R.layout.activity_set_loaction);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(R.id.map_setLoaction);
         mapFragment.getMapAsync(this);
     }
-
 
     /**
      * Manipulates the map once available.
@@ -42,5 +50,20 @@ public class SetLoactionActivity extends FragmentActivity implements OnMapReadyC
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        
+
+        // set location
+        mMap.setOnMapClickListener(new OnMapClickListener()
+        {
+            @Override
+            public void onMapClick(LatLng point)
+            {
+                mMap.clear();
+                mMap.addMarker(new MarkerOptions()
+                        .position(point));
+
+                // Todo : save lat, lng data
+            }
+        });
     }
 }
