@@ -34,7 +34,7 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"></meta-data>
+                android:resource="@xml/file_paths" />
         </provider>
 
         <activity
@@ -48,7 +48,7 @@
         </activity>
         <activity
             android:name=".PhotoUploadActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"></activity>
+            android:configChanges="orientation|screenSize|keyboardHidden" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -63,7 +63,7 @@
 
         <activity
             android:name=".SetLoactionActivity"
-            android:label="@string/title_activity_set_loaction"></activity>
+            android:label="@string/title_activity_set_loaction" />
     </application>
 
 </manifest>
