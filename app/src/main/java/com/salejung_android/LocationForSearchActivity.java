@@ -1,20 +1,17 @@
 package com.salejung_android;
 
-import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -24,7 +21,11 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.text.DecimalFormat;
 
-public class SetLoactionForUploadActivity extends FragmentActivity implements OnMapReadyCallback {
+/**
+ * Created by xotjr on 2017-11-09.
+ */
+
+public class LocationForSearchActivity extends FragmentActivity implements OnMapReadyCallback {
 
     // why double can't has null value?? So I choose.
     private double LOCATION_NULL = 9999.9999;
@@ -39,15 +40,15 @@ public class SetLoactionForUploadActivity extends FragmentActivity implements On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_set_loaction);
+        setContentView(R.layout.activity_location_for_search);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             // User is signed in
         } else {
             // No user is signed in
-            Intent intent = new Intent(SetLoactionForUploadActivity.this, LoginActivity.class);
-            intent.putExtra("returnActivity","SetLoactionForUploadActivity");
+            Intent intent = new Intent(LocationForSearchActivity.this, LoginActivity.class);
+            intent.putExtra("returnActivity","LocationForSearchActivity");
             startActivity(intent);
             finish();
             return;
@@ -64,7 +65,7 @@ public class SetLoactionForUploadActivity extends FragmentActivity implements On
             @Override
             public void onClick(View view) {
                 if (mLat != LOCATION_NULL && mLng != LOCATION_NULL) {
-                    SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
+                    SharedPreferences sharedPreferences = getSharedPreferences("Coordinate", 0);
                     SharedPreferences.Editor spEditor = sharedPreferences.edit();
                     DecimalFormat form = new DecimalFormat("#.######");
                     spEditor.putString("lat", form.format(mLat));
@@ -72,7 +73,7 @@ public class SetLoactionForUploadActivity extends FragmentActivity implements On
 
                     spEditor.apply();
 
-                    Intent intent = new Intent(SetLoactionForUploadActivity.this, PhotoUploadActivity.class);
+                    Intent intent = new Intent(LocationForSearchActivity.this, SearchActivity.class);
                     startActivity(intent);
                 } else {
                     // TODO :
@@ -86,9 +87,9 @@ public class SetLoactionForUploadActivity extends FragmentActivity implements On
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == MY_LOCATION_REQUEST_CODE) {
             if (permissions.length == 1 &&
-                    permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION &&
+                    permissions[0] == android.Manifest.permission.ACCESS_FINE_LOCATION &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     // TODO: Consider calling
                     //    ActivityCompat#requestPermissions
                     // here to request the missing permissions, and then overriding
@@ -125,16 +126,16 @@ public class SetLoactionForUploadActivity extends FragmentActivity implements On
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         // If there is no location permission, try to get location permission.
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         } else {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_LOCATION_REQUEST_CODE);
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_LOCATION_REQUEST_CODE);
         }
 
         // set location data. (lat, lng)
-        mMap.setOnMapClickListener(new OnMapClickListener()
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
             @Override
             public void onMapClick(LatLng point)

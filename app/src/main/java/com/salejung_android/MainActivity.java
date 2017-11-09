@@ -18,20 +18,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final Button btn = findViewById(R.id.btn);
-        btn.setOnClickListener(new View.OnClickListener() {
+
+        final Button btn_upload = findViewById(R.id.btn_upload);
+        btn_upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, PhotoUploadActivity.class);
+                Intent intent = new Intent(MainActivity.this, LocationForUploadActivity.class);
                 startActivity(intent);
             }
         });
 
-        final Button btn2 = findViewById(R.id.btn2);
-        btn2.setOnClickListener(new View.OnClickListener() {
+        final Button btn_search = findViewById(R.id.btn_search);
+        btn_search.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, SetLoactionForUploadActivity.class);
+                Intent intent = new Intent(MainActivity.this, LocationForSearchActivity.class);
                 startActivity(intent);
             }
         });

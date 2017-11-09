@@ -43,7 +43,7 @@ import android.content.SharedPreferences.Editor;
  */
 
 
-public class PhotoUploadActivity extends AppCompatActivity {
+public class UploadActivity extends AppCompatActivity {
 
     private static String uniqueID = null;
     private static final String PREF_UNIQUE_ID = "PREF_UNIQUE_ID";
@@ -59,7 +59,7 @@ public class PhotoUploadActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_photo_upload);
+        setContentView(R.layout.activity_upload);
 
         // if image clicked, take picture, get photo image and fill view with photo image.
         imgView = findViewById(R.id.imgView);
@@ -110,7 +110,7 @@ public class PhotoUploadActivity extends AppCompatActivity {
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        user_uuid = id(PhotoUploadActivity.this);
+        user_uuid = id(UploadActivity.this);
         String imageFileName = user_uuid + timeStamp;
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(imageFileName, ".jpg", storageDir);
@@ -173,12 +173,12 @@ public class PhotoUploadActivity extends AppCompatActivity {
         params.put("lat", sharedPreferences.getString("lat", "no lat"));
         params.put("lng", sharedPreferences.getString("lng", "no lng"));
 
-        PhotoUploadTask task = new PhotoUploadTask();
+        UploadTask task = new UploadTask();
         task.execute(params);
     }
 
 
-    class PhotoUploadTask extends AsyncTask<Map<String, String>, Integer, String> {
+    class UploadTask extends AsyncTask<Map<String, String>, Integer, String> {
 
         protected String doInBackground(Map<String, String>... params) {
             HttpURLConnection connection;

@@ -54,16 +54,19 @@ public class LoginActivity extends AppCompatActivity {
             // TODO : fasebook login test not yet. only twitter test completed.
             if (resultCode == RESULT_OK) {
 
-                // If login triggered by SetLoactionForUploadActivity.
-                if(returnActivity.equals("SetLoactionForUploadActivity")) {
-                    Intent intent = new Intent(LoginActivity.this, SetLoactionForUploadActivity.class);
+                // If login triggered by LocationForUploadActivity.
+                if(returnActivity.equals("LocationForUploadActivity")) {
+                    Intent intent = new Intent(LoginActivity.this, LocationForUploadActivity.class);
                     startActivity(intent);
                     finish();
                     return;
                 }
-                // If login triggered by SetLoactionForSearchActivity.
-                else if(returnActivity.equals("SetLoactionForSearchActivity")) {
-
+                // If login triggered by LocationForSearchActivity.
+                else if(returnActivity.equals("LocationForSearchActivity")) {
+                    Intent intent = new Intent(LoginActivity.this, LocationForSearchActivity.class);
+                    startActivity(intent);
+                    finish();
+                    return;
                 }
 
             } else {

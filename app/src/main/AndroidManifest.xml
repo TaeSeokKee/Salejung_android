@@ -52,13 +52,20 @@
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
 
         <activity
-            android:name=".SetLoactionForUploadActivity"
-            android:label="@string/title_activity_set_loaction" />
-
-        <activity
-            android:name=".PhotoUploadActivity"
+            android:name=".LocationForUploadActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
 
+        <activity
+            android:name=".LocationForSearchActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
+
+        <activity
+            android:name=".UploadActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
+
+        <activity
+            android:name=".SearchActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
 
 
         <!--
