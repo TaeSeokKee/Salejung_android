@@ -8,6 +8,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -18,9 +19,12 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import java.text.DecimalFormat;
 
-public class SetLoactionActivity extends FragmentActivity implements OnMapReadyCallback {
+public class SetLoactionForUploadActivity extends FragmentActivity implements OnMapReadyCallback {
 
     // why double can't has null value?? So I choose.
     private double LOCATION_NULL = 9999.9999;
@@ -36,6 +40,18 @@ public class SetLoactionActivity extends FragmentActivity implements OnMapReadyC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_loaction);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            // User is signed in
+        } else {
+            // No user is signed in
+            Intent intent = new Intent(SetLoactionForUploadActivity.this, LoginActivity.class);
+            intent.putExtra("returnActivity","SetLoactionForUploadActivity");
+            startActivity(intent);
+            finish();
+            return;
+        }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -56,7 +72,7 @@ public class SetLoactionActivity extends FragmentActivity implements OnMapReadyC
 
                     spEditor.apply();
 
-                    Intent intent = new Intent(SetLoactionActivity.this, PhotoUploadActivity.class);
+                    Intent intent = new Intent(SetLoactionForUploadActivity.this, PhotoUploadActivity.class);
                     startActivity(intent);
                 } else {
                     // TODO :

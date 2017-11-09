@@ -24,6 +24,15 @@
         android:layout_margin="10dip"
         android:padding="10dip"
         android:text="@string/MapActivityBtn"/>
+
+    <Button
+        android:id="@+id/btn_sign_out"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dip"
+        android:padding="10dip"
+        android:text="@string/MapActivityBtn"/>
 </LinearLayout>
 
 
