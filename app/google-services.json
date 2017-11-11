@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "868938632421",
+    "firebase_url": "https://salejung-5e891.firebaseio.com",
+    "project_id": "salejung-5e891",
+    "storage_bucket": "salejung-5e891.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:868938632421:android:1f4e3c8ae392a61a",
+        "android_client_info": {
+          "package_name": "com.salejung_android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "868938632421-ghkl3f1bj5eac3bver7f0rhamvstqusa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgqxxacktV7C-nYBhm6-deHwd8Q50xkWI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
