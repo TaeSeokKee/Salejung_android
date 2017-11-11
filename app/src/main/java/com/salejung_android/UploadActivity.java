@@ -1,25 +1,23 @@
 package com.salejung_android;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Button;
@@ -31,10 +29,20 @@ import android.net.Uri;
 import android.widget.Toast;
 import android.os.Environment;
 import android.support.v4.content.FileProvider;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 
 
@@ -45,21 +53,68 @@ import android.content.SharedPreferences.Editor;
 
 public class UploadActivity extends AppCompatActivity {
 
-    private static String uniqueID = null;
-    private static final String PREF_UNIQUE_ID = "PREF_UNIQUE_ID";
     static final int REQUEST_TAKE_PHOTO = 1;
-    public static String BASE_URL = "https://salejung-dev.herokuapp.com/photos/api/";
     String mCurrentPhotoPath = null;
     ImageView imgView = null;
     Uri photoURI = null;
-    String user_uuid = null;
-    String filefield = "photo";
-
+    String userId = null;
+    String storageFileField = "images";
+    Locale systemLocale = null;
+    String timeStamp = null;
+    FirebaseUser user = null;
+    Geocoder geocoder = null;
+    String lat = null;
+    String lng = null;
+    List<Address> addresses = null;
+    ArrayList<String> addressFragments = null;
+    String fileName = null;
+    String BASE_URL = "https://salejung-dev.herokuapp.com/photos/api/";
+    RequestQueue queue = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload);
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        systemLocale = getApplicationContext().getResources().getConfiguration().locale;
+        timeStamp = new SimpleDateFormat("yyyyMMddHHmmss", systemLocale).format(new Date());
+        userId = user.getUid();
+        geocoder= new Geocoder(this, Locale.getDefault());
+        SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
+        lat = sharedPreferences.getString("lat", "no lng");
+        lng = sharedPreferences.getString("lng", "no lng");
+
+        queue = Volley.newRequestQueue(UploadActivity.this);
+
+        try {
+            addresses = geocoder.getFromLocation(
+                    Double.parseDouble(lat),
+                    Double.parseDouble(lng),
+                    // In this sample, get just a single address.
+                    1);
+        } catch (IOException ioException) {
+            // Catch network or other I/O problems.
+
+        } catch (IllegalArgumentException illegalArgumentException) {
+            // Catch invalid latitude or longitude values.
+
+        }
+
+        // Handle case where no address was found.
+        if (addresses == null || addresses.size()  == 0) {
+
+        } else {
+            Address address = addresses.get(0);
+            addressFragments = new ArrayList<>();
+
+            // Fetch the address lines using getAddressLine,
+            // join them, and send them to the thread.
+            for(int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
+                addressFragments.add(address.getAddressLine(i));
+            }
+        }
+
 
         // if image clicked, take picture, get photo image and fill view with photo image.
         imgView = findViewById(R.id.imgView);
@@ -74,7 +129,7 @@ public class UploadActivity extends AppCompatActivity {
         });
 
         // if button clicked, upload image and related information.
-        final Button btn = findViewById(R.id.btn_upload_stage_2);
+        final Button btn = findViewById(R.id.btn_do_upload);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -108,16 +163,19 @@ public class UploadActivity extends AppCompatActivity {
     }
 
     private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        user_uuid = id(UploadActivity.this);
-        String imageFileName = user_uuid + timeStamp;
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+        if (user != null) {
+            // Create an image file name
+            String imageFileName = timeStamp + '_' + userId;
+            File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+            mCurrentPhotoPath = image.getAbsolutePath();
+            return image;
+        } else {
+            // TODO : exception handle
+            return null;
+        }
 
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
-        return image;
+
     }
 
     private void dispatchTakePictureIntent() {
@@ -129,7 +187,9 @@ public class UploadActivity extends AppCompatActivity {
             try {
                 photoFile = createImageFile();
             } catch (IOException ex) {
+                // TODO : exception handle.
                 // Error occurred while creating the File
+                Toast.makeText(getApplicationContext(), "User not sign in", Toast.LENGTH_LONG).show();
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
@@ -142,171 +202,85 @@ public class UploadActivity extends AppCompatActivity {
         }
     }
 
-
-    public synchronized static String id(Context context) {
-        if (uniqueID == null) {
-            SharedPreferences sharedPrefs = context.getSharedPreferences(
-                    PREF_UNIQUE_ID, Context.MODE_PRIVATE);
-            uniqueID = sharedPrefs.getString(PREF_UNIQUE_ID, null);
-            if (uniqueID == null) {
-                uniqueID = UUID.randomUUID().toString();
-                Editor editor = sharedPrefs.edit();
-                editor.putString(PREF_UNIQUE_ID, uniqueID);
-                editor.apply();
-            }
-        }
-        return uniqueID;
-    }
-
     private void imageUpload() throws IOException {
-        Map<String, String> params = new HashMap<>();
-        EditText priceText = findViewById(R.id.price);
-        EditText detailText = findViewById(R.id.detail);
-        Log.d("price", priceText.getText().toString());
-        Log.d("detail", detailText.getText().toString());
-        Log.d("user", user_uuid);
-        params.put("user", user_uuid);
-        params.put("price", priceText.getText().toString());
-        params.put("detail", detailText.getText().toString());
 
-        SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
-        params.put("lat", sharedPreferences.getString("lat", "no lat"));
-        params.put("lng", sharedPreferences.getString("lng", "no lng"));
+        FirebaseStorage storage = FirebaseStorage.getInstance();
 
-        UploadTask task = new UploadTask();
-        task.execute(params);
-    }
+        // Create a storage reference from our app
+        StorageReference storageRef = storage.getReference();
 
+        String[] splitedPath = mCurrentPhotoPath.split("/");
+        fileName = splitedPath[splitedPath.length - 1];
 
-    class UploadTask extends AsyncTask<Map<String, String>, Integer, String> {
+        String filePath = storageFileField + "/"
+                + systemLocale.getCountry() + "/"
+                + new SimpleDateFormat("yyyy/MM/dd/", systemLocale).format(new Date())
+                + fileName;
 
-        protected String doInBackground(Map<String, String>... params) {
-            HttpURLConnection connection;
-            DataOutputStream outputStream;
-            InputStream inputStream;
+        // Create a child reference
+        // imagesRef now points to "images"
+        StorageReference imagesRef = storageRef.child(filePath);
 
-            String twoHyphens = "--";
-            String boundary = "*****" + "salejung" + "*****";
-            String lineEnd = "\r\n";
+        // Get the image
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), photoURI);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] img = baos.toByteArray();
 
-            String result = "";
-
-            String[] q = mCurrentPhotoPath.split("/");
-            int idx = q.length - 1;
-
-            try {
-                File file = new File(mCurrentPhotoPath);
-                FileInputStream fileInputStream = new FileInputStream(file);
-
-                URL url = new URL(BASE_URL);
-                connection = (HttpURLConnection) url.openConnection();
-
-                connection.setDoInput(true);
-                connection.setDoOutput(true);
-                connection.setUseCaches(false);
-
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Connection", "Keep-Alive");
-                connection.setRequestProperty("User-Agent", "Android Multipart HTTP Client 1.0");
-                connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-
-                outputStream = new DataOutputStream(connection.getOutputStream());
-                outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-                outputStream.writeBytes("Content-Disposition: form-data; name=\"" + filefield + "\"; filename=\"" + q[idx] + "\"" + lineEnd);
-                outputStream.writeBytes("Content-Type: " + "image/jpeg" + lineEnd);
-                outputStream.writeBytes("Content-Transfer-Encoding: binary" + lineEnd);
-
-                outputStream.writeBytes(lineEnd);
-
-
-                // Upload POST photo
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), photoURI);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                byte[] imageBytes = baos.toByteArray();
-                outputStream.write(imageBytes);
-
-                outputStream.writeBytes(lineEnd);
-
-                // Upload POST user
-                outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-                outputStream.writeBytes("Content-Disposition: form-data; name=\"" + "user" + "\"" + lineEnd);
-                outputStream.writeBytes("Content-Type: text/plain" + lineEnd);
-                outputStream.writeBytes(lineEnd);
-                outputStream.writeBytes(params[0].get("user"));
-                outputStream.writeBytes(lineEnd);
-
-                // Upload POST price
-                outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-                outputStream.writeBytes("Content-Disposition: form-data; name=\"" + "price" + "\"" + lineEnd);
-                outputStream.writeBytes("Content-Type: text/plain" + lineEnd);
-                outputStream.writeBytes(lineEnd);
-                outputStream.writeBytes(params[0].get("price"));
-                outputStream.writeBytes(lineEnd);
-
-                // Upload POST detail
-                outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-                outputStream.writeBytes("Content-Disposition: form-data; name=\"" + "detail" + "\"" + lineEnd);
-                outputStream.writeBytes("Content-Type: text/plain" + lineEnd);
-                outputStream.writeBytes(lineEnd);
-                // Todo : if use writeUTF function when post detail string to server, trash code is added at word's front.
-                // So used write function. and need to test more specific. writeUTF function might has bug.
-                outputStream.write(params[0].get("detail").getBytes("UTF-8"));
-                outputStream.writeBytes(lineEnd);
-
-                // Upload POST lat
-                outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-                outputStream.writeBytes("Content-Disposition: form-data; name=\"" + "lat" + "\"" + lineEnd);
-                outputStream.writeBytes("Content-Type: text/plain" + lineEnd);
-                outputStream.writeBytes(lineEnd);
-                outputStream.writeBytes(params[0].get("lat"));
-                outputStream.writeBytes(lineEnd);
-
-                // Upload POST lng
-                outputStream.writeBytes(twoHyphens + boundary + lineEnd);
-                outputStream.writeBytes("Content-Disposition: form-data; name=\"" + "lng" + "\"" + lineEnd);
-                outputStream.writeBytes("Content-Type: text/plain" + lineEnd);
-                outputStream.writeBytes(lineEnd);
-                outputStream.writeBytes(params[0].get("lng"));
-                outputStream.writeBytes(lineEnd);
-
-
-                outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-
-                int responseCode = connection.getResponseCode();
-
-                if (200 <= responseCode && responseCode <= 299) {
-                    inputStream = connection.getInputStream();
-                } else {
-                    inputStream = connection.getErrorStream();
-                }
-
-                BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-
-                StringBuilder response = new StringBuilder();
-                String currentLine;
-
-                while ((currentLine = in.readLine()) != null)
-                    response.append(currentLine);
-
-                in.close();
-                result = response.toString();
-
-                fileInputStream.close();
-                inputStream.close();
-                outputStream.flush();
-                outputStream.close();
-
-            } catch (Exception e) {
-                // Todo : exception handle
+        UploadTask uploadTask = imagesRef.putBytes(img);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful upload
+                Toast.makeText(getApplicationContext(), "Handle unsuccessful upload1", Toast.LENGTH_LONG).show();
+                Log.i("IMAGE_UPLOAD_FAILURE", "image upload to firebase storage failure");
             }
-            return result;
-        }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // Handle successful upload
+                Log.i("IMAGE_UPLOAD_SUCCESS", "image upload to firebase storage success");
 
-        protected void onPostExecute(String result) {
-            Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show();
-        }
+                StringRequest postRequest = new StringRequest(Request.Method.POST, BASE_URL,
+                        new Response.Listener<String>()
+                        {
+                            @Override
+                            public void onResponse(String response) {
+                                // response
+                                Log.d("Response", response);
+                            }
+                        },
+                        new Response.ErrorListener()
+                        {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                // error
+                                Log.d("Error.Response", "error");
+                            }
+                        }
+                ) {
+                    @Override
+                    protected Map<String, String> getParams()
+                    {
+                        Map<String, String>  params = new HashMap<>();
+                        EditText priceText = findViewById(R.id.price);
+                        EditText detailText = findViewById(R.id.detail);
+                        params.put("user", userId);
+                        params.put("price", priceText.getText().toString());
+                        params.put("detail", detailText.getText().toString());
+                        params.put("lat", lat);
+                        params.put("lng", lng);
+                        params.put("photo", fileName);
+                        params.put("date", timeStamp);
+                        params.put("address", addressFragments.get(0));
+                        return params;
+                    }
+                };
+                queue.add(postRequest);
+            }
+        });
     }
+
 }
 
 
