@@ -53,6 +53,7 @@ import com.google.firebase.storage.UploadTask;
 
 public class UploadActivity extends AppCompatActivity {
 
+    final int IMAGE_INFO_UPLOAD_SUCCESS = 1;
     static final int REQUEST_TAKE_PHOTO = 1;
     String mCurrentPhotoPath = null;
     ImageView imgView = null;
@@ -232,7 +233,6 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful upload
-                Toast.makeText(getApplicationContext(), "Handle unsuccessful upload1", Toast.LENGTH_LONG).show();
                 Log.i("IMAGE_UPLOAD_FAILURE", "image upload to firebase storage failure");
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -241,13 +241,19 @@ public class UploadActivity extends AppCompatActivity {
                 // Handle successful upload
                 Log.i("IMAGE_UPLOAD_SUCCESS", "image upload to firebase storage success");
 
+                // Upload image info data using volley POST.
                 StringRequest postRequest = new StringRequest(Request.Method.POST, BASE_URL,
                         new Response.Listener<String>()
                         {
                             @Override
                             public void onResponse(String response) {
                                 // response
-                                Log.d("Response", response);
+                                if(IMAGE_INFO_UPLOAD_SUCCESS == 1){
+                                    Toast.makeText(getApplicationContext(), "Upload success", Toast.LENGTH_LONG).show();
+                                }
+                                else {
+                                    Toast.makeText(getApplicationContext(), "Upload fail", Toast.LENGTH_LONG).show();
+                                }
                             }
                         },
                         new Response.ErrorListener()
@@ -255,7 +261,7 @@ public class UploadActivity extends AppCompatActivity {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 // error
-                                Log.d("Error.Response", "error");
+                                Log.d("IMAGE_INFO_UPLOAD", "image info upload failure");
                             }
                         }
                 ) {
