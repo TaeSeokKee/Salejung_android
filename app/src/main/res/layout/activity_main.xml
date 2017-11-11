@@ -8,22 +8,33 @@
     android:orientation="vertical">
 
     <Button
-        android:id="@+id/btn"
+        android:id="@+id/btn_upload"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dip"
         android:padding="10dip"
-        android:text="@string/MainActivityBtn"/>
+        android:text="@string/btn_upload"/>
 
     <Button
-        android:id="@+id/btn2"
+        android:id="@+id/btn_search"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dip"
         android:padding="10dip"
-        android:text="@string/MapActivityBtn"/>
+        android:text="@string/btn_search"/>
+
+    <Button
+        android:id="@+id/btn_sign_out"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dip"
+        android:padding="10dip"
+        android:text="@string/btn_sign_out"/>
+
+
 </LinearLayout>
 
 

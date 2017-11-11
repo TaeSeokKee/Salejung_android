@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="MainActivityBtn">Go to PhotoUpload Activity</string>
-    <string name="MapActivityBtn">Go to Map Activity</string>
+    <string name="btn_upload">Go to Upload</string>
+    <string name="btn_search">Go to search</string>
+    <string name="btn_sign_out">sign out</string>
 
 
     <string name="app_name">Salejung</string>
@@ -14,4 +15,5 @@
     <string name="title_activity_set_loaction">Map</string>
     <string name="btn_upload_stage_1">다음</string>
     <string name="text_setLoaction">위치를 선택하세요.</string>
+
 </resources>
