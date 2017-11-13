@@ -17,12 +17,14 @@ public class Photo {
     private String mPrice;
     private String mDetail;
     private String mDate;
+    private String mCountry;
 
-    public Photo(String photoURL, String price, String detail, String date) {
+    public Photo(String photoURL, String price, String detail, String date, String country) {
         mPhotoURL = photoURL;
         mPrice = price;
         mDetail = detail;
         mDate = date;
+        mCountry = country;
     }
 
     public String getPhotoURL() {
@@ -37,6 +39,8 @@ public class Photo {
 
     public String getDate() { return mDate; }
 
+    public String getCountry() { return mCountry; }
+
 
     public static List<Photo> createContactsList(int numContacts, int offset, JSONArray jsonArray) throws JSONException {
         List<Photo> contacts = new ArrayList<Photo>();
@@ -46,13 +50,15 @@ public class Photo {
                     jsonArray.getJSONObject(i).getString("photo"),
                     jsonArray.getJSONObject(i).getString("price"),
                     jsonArray.getJSONObject(i).getString("detail"),
-                    jsonArray.getJSONObject(i).getString("date")
+                    jsonArray.getJSONObject(i).getString("date"),
+                    jsonArray.getJSONObject(i).getString("country")
                     ));
 
             Log.d("json", contacts.get(i).getPhotoURL());
             Log.d("json", contacts.get(i).getPrice());
             Log.d("json", contacts.get(i).getDetail());
             Log.d("json", contacts.get(i).getDate());
+            Log.d("json", contacts.get(i).getCountry());
         }
 
         return contacts;

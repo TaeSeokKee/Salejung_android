@@ -291,6 +291,7 @@ public class UploadActivity extends AppCompatActivity {
                         String price = priceText.getText().toString();
                         String detail = detailText.getText().toString();
                         String address = addressFragments.get(0);
+                        String country = systemLocale.getCountry();
 
                         if(userId == null) {
                             Log.e("UploadActivity", "userId is null");
@@ -324,6 +325,10 @@ public class UploadActivity extends AppCompatActivity {
                             Log.e("UploadActivity", "address is null");
                         }
 
+                        if(country == null) {
+                            Log.e("UploadActivity", "country is null");
+                        }
+
                         params.put("user", userId);
                         params.put("price", price);
                         params.put("detail", detail);
@@ -332,6 +337,8 @@ public class UploadActivity extends AppCompatActivity {
                         params.put("photo", fileName);
                         params.put("date", timeStamp);
                         params.put("address", address);
+                        params.put("country", country);
+
                         return params;
                     }
                 };

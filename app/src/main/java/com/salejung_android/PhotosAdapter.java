@@ -90,6 +90,11 @@ public class PhotosAdapter extends
         if (storageRef == null)
             Log.e("PhotoAdapter error", "storageRef is null");
 
+        String country = contact.getCountry();
+
+        if (country == null)
+            Log.e("PhotoAdapter error", "country is null");
+
         String date = contact.getDate();
 
         if (date == null)
@@ -100,7 +105,7 @@ public class PhotosAdapter extends
         String day = date.substring(6,8);
 
         // Create a reference with an initial file path
-        StorageReference pathReference = storageRef.child("images/KR/" + year + "/" + month + "/" + day + "/" + contact.getPhotoURL());
+        StorageReference pathReference = storageRef.child("images/" + country + "/" + year + "/" + month + "/" + day + "/" + contact.getPhotoURL());
 
         // Load the image using Glide
         GlideApp.with(mContext)
