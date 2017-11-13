@@ -53,7 +53,7 @@ import com.google.firebase.storage.UploadTask;
 
 public class UploadActivity extends AppCompatActivity {
 
-    final int IMAGE_INFO_UPLOAD_SUCCESS = 1;
+    final String IMAGE_INFO_UPLOAD_SUCCESS = "1";
     static final int REQUEST_TAKE_PHOTO = 1;
     String mCurrentPhotoPath = null;
     ImageView imgView = null;
@@ -69,7 +69,7 @@ public class UploadActivity extends AppCompatActivity {
     List<Address> addresses = null;
     ArrayList<String> addressFragments = null;
     String fileName = null;
-    String BASE_URL = "https://salejung-dev.herokuapp.com/photos/api/";
+    String BASE_URL = "https://salejung-dev.herokuapp.com/photo/post/";
     RequestQueue queue = null;
 
     @Override
@@ -96,15 +96,16 @@ public class UploadActivity extends AppCompatActivity {
                     1);
         } catch (IOException ioException) {
             // Catch network or other I/O problems.
+            ioException.printStackTrace();
 
         } catch (IllegalArgumentException illegalArgumentException) {
             // Catch invalid latitude or longitude values.
-
+            illegalArgumentException.printStackTrace();
         }
 
         // Handle case where no address was found.
         if (addresses == null || addresses.size()  == 0) {
-
+            Log.e("UploadActivity","addresses is null");
         } else {
             Address address = addresses.get(0);
             addressFragments = new ArrayList<>();
@@ -114,6 +115,10 @@ public class UploadActivity extends AppCompatActivity {
             for(int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
                 addressFragments.add(address.getAddressLine(i));
             }
+
+            if(addressFragments == null) {
+                Log.e("UploadActivity","addressFragments is null");
+            }
         }
 
 
@@ -122,7 +127,7 @@ public class UploadActivity extends AppCompatActivity {
         imgView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Todo : add function that when upload photo, user can select photo in external storage.
+                // Todo : add function that when upload photo, user can select photo in inner storage.
                 // Now, User can upload image only by taking picture
 
                 dispatchTakePictureIntent();
@@ -170,13 +175,21 @@ public class UploadActivity extends AppCompatActivity {
             File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
             File image = File.createTempFile(imageFileName, ".jpg", storageDir);
             mCurrentPhotoPath = image.getAbsolutePath();
+
+            if(storageDir == null) {
+                Log.e("UploadActivity","storageDir is null");
+            }
+
+            if(mCurrentPhotoPath == null) {
+                Log.e("UploadActivity","mCurrentPhotoPath is null");
+            }
+
             return image;
+
         } else {
-            // TODO : exception handle
+            Log.e("UploadActivity","user is null");
             return null;
         }
-
-
     }
 
     private void dispatchTakePictureIntent() {
@@ -188,9 +201,9 @@ public class UploadActivity extends AppCompatActivity {
             try {
                 photoFile = createImageFile();
             } catch (IOException ex) {
-                // TODO : exception handle.
+                ex.printStackTrace();
                 // Error occurred while creating the File
-                Toast.makeText(getApplicationContext(), "User not sign in", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "User not signed in", Toast.LENGTH_LONG).show();
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
@@ -199,6 +212,9 @@ public class UploadActivity extends AppCompatActivity {
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+            }
+            else {
+                Log.e("UploadActivity","photoFile is null");
             }
         }
     }
@@ -233,13 +249,13 @@ public class UploadActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful upload
-                Log.i("IMAGE_UPLOAD_FAILURE", "image upload to firebase storage failure");
+                Log.d("IMAGE_UPLOAD_FAILURE", "image upload to firebase storage failure");
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // Handle successful upload
-                Log.i("IMAGE_UPLOAD_SUCCESS", "image upload to firebase storage success");
+                Log.d("IMAGE_UPLOAD_SUCCESS", "image upload to firebase storage success");
 
                 // Upload image info data using volley POST.
                 StringRequest postRequest = new StringRequest(Request.Method.POST, BASE_URL,
@@ -248,7 +264,7 @@ public class UploadActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(String response) {
                                 // response
-                                if(IMAGE_INFO_UPLOAD_SUCCESS == 1){
+                                if(response.equals(IMAGE_INFO_UPLOAD_SUCCESS)){
                                     Toast.makeText(getApplicationContext(), "Upload success", Toast.LENGTH_LONG).show();
                                 }
                                 else {
@@ -271,14 +287,58 @@ public class UploadActivity extends AppCompatActivity {
                         Map<String, String>  params = new HashMap<>();
                         EditText priceText = findViewById(R.id.price);
                         EditText detailText = findViewById(R.id.detail);
+
+                        String price = priceText.getText().toString();
+                        String detail = detailText.getText().toString();
+                        String address = addressFragments.get(0);
+                        String country = systemLocale.getCountry();
+
+                        if(userId == null) {
+                            Log.e("UploadActivity", "userId is null");
+                        }
+
+                        if(price == null) {
+                            Log.e("UploadActivity", "price is null");
+                        }
+
+                        if(detail == null) {
+                            Log.e("UploadActivity", "detail is null");
+                        }
+
+                        if(lat == null) {
+                            Log.e("UploadActivity", "lat is null");
+                        }
+
+                        if(lng == null) {
+                            Log.e("UploadActivity", "lng is null");
+                        }
+
+                        if(fileName == null) {
+                            Log.e("UploadActivity", "fileName is null");
+                        }
+
+                        if(timeStamp == null) {
+                            Log.e("UploadActivity", "timeStamp is null");
+                        }
+
+                        if(address == null) {
+                            Log.e("UploadActivity", "address is null");
+                        }
+
+                        if(country == null) {
+                            Log.e("UploadActivity", "country is null");
+                        }
+
                         params.put("user", userId);
-                        params.put("price", priceText.getText().toString());
-                        params.put("detail", detailText.getText().toString());
+                        params.put("price", price);
+                        params.put("detail", detail);
                         params.put("lat", lat);
                         params.put("lng", lng);
                         params.put("photo", fileName);
                         params.put("date", timeStamp);
-                        params.put("address", addressFragments.get(0));
+                        params.put("address", address);
+                        params.put("country", country);
+
                         return params;
                     }
                 };
@@ -286,7 +346,6 @@ public class UploadActivity extends AppCompatActivity {
             }
         });
     }
-
 }
 
 

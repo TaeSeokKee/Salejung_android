@@ -5,6 +5,7 @@ buildscript {
     repositories {
         google()
         jcenter()
+
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.0'
@@ -20,8 +21,15 @@ allprojects {
     repositories {
         google()
         jcenter()
+
+
+        // glide
+        mavenCentral()
+        maven { url 'https://maven.google.com' }
+
         // firebase twitter login
         maven { url 'https://maven.fabric.io/public' }
+
     }
 }
 
