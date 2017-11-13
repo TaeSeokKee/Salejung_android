@@ -48,6 +48,13 @@ dependencies {
     // Required only if Twitter login support is required
     compile("com.twitter.sdk.android:twitter-core:3.0.0@aar") { transitive = true }
 
+    // glide
+    compile 'com.github.bumptech.glide:glide:4.3.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.3.1'
+
+    // FirebaseUI Storage only
+    compile 'com.firebaseui:firebase-ui-storage:3.1.0'
+
 }
 
 // firebase

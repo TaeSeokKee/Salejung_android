@@ -2,6 +2,7 @@ package com.salejung_android;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,7 +54,7 @@ import com.google.firebase.storage.UploadTask;
 
 public class UploadActivity extends AppCompatActivity {
 
-    final int IMAGE_INFO_UPLOAD_SUCCESS = 1;
+    final String IMAGE_INFO_UPLOAD_SUCCESS = "1";
     static final int REQUEST_TAKE_PHOTO = 1;
     String mCurrentPhotoPath = null;
     ImageView imgView = null;
@@ -69,7 +70,7 @@ public class UploadActivity extends AppCompatActivity {
     List<Address> addresses = null;
     ArrayList<String> addressFragments = null;
     String fileName = null;
-    String BASE_URL = "https://salejung-dev.herokuapp.com/photos/api/";
+    String BASE_URL = "https://salejung-dev.herokuapp.com/photo/post/";
     RequestQueue queue = null;
 
     @Override
@@ -248,7 +249,7 @@ public class UploadActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(String response) {
                                 // response
-                                if(IMAGE_INFO_UPLOAD_SUCCESS == 1){
+                                if(response.equals(IMAGE_INFO_UPLOAD_SUCCESS)){
                                     Toast.makeText(getApplicationContext(), "Upload success", Toast.LENGTH_LONG).show();
                                 }
                                 else {
@@ -271,6 +272,9 @@ public class UploadActivity extends AppCompatActivity {
                         Map<String, String>  params = new HashMap<>();
                         EditText priceText = findViewById(R.id.price);
                         EditText detailText = findViewById(R.id.detail);
+
+                        String detail = detailText.getText().toString();
+                        //detail = detail.getBytes(Charset.forName("UTF-8")).toString();
                         params.put("user", userId);
                         params.put("price", priceText.getText().toString());
                         params.put("detail", detailText.getText().toString());
