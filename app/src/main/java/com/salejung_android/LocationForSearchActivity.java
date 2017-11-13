@@ -77,7 +77,8 @@ public class LocationForSearchActivity extends FragmentActivity implements OnMap
                     Intent intent = new Intent(LocationForSearchActivity.this, SearchActivity.class);
                     startActivity(intent);
                 } else {
-                    // TODO :
+                    // TODO
+                    Log.e("Coordinate error", "mLat mLng is null");
                 }
             }
         });

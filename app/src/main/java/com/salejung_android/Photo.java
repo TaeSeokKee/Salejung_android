@@ -41,11 +41,7 @@ public class Photo {
     public static List<Photo> createContactsList(int numContacts, int offset, JSONArray jsonArray) throws JSONException {
         List<Photo> contacts = new ArrayList<Photo>();
 
-
-        for (int i = 0; i <= numContacts-1; i++) {/*
-            Log.d("json", jsonArray.getJSONObject(i).getString("photo"));
-            Log.d("json", jsonArray.getJSONObject(i).getString("price"));
-            Log.d("json", jsonArray.getJSONObject(i).getString("detail"));*/
+        for (int i = 0; i <= numContacts-1; i++) {
             contacts.add(new Photo(
                     jsonArray.getJSONObject(i).getString("photo"),
                     jsonArray.getJSONObject(i).getString("price"),
@@ -56,6 +52,7 @@ public class Photo {
             Log.d("json", contacts.get(i).getPhotoURL());
             Log.d("json", contacts.get(i).getPrice());
             Log.d("json", contacts.get(i).getDetail());
+            Log.d("json", contacts.get(i).getDate());
         }
 
         return contacts;

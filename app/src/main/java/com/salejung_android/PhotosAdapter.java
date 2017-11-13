@@ -18,30 +18,27 @@ import java.util.List;
  * Created by xotjr on 2017-11-12.
  */
 
-
 public class PhotosAdapter extends
         RecyclerView.Adapter<PhotosAdapter.ViewHolder> {
 
     // Store a member variable for the contacts
     private List<Photo> mContacts;
 
-    private Context context;
+    private Context mContext;
 
-
-    FirebaseStorage storage = null;
-
-    // Create a storage reference from our app
-    StorageReference storageRef = null;
-
-    // Create a reference with an initial file path and name
-    StorageReference pathReference = null;
+    FirebaseStorage mStorage = null;
 
     // Pass in the contact array into the constructor
     public PhotosAdapter(List<Photo> contacts, FirebaseStorage _storage) {
 
-        mContacts = contacts;
-        storage = _storage;
+        if(contacts == null)
+            Log.e("PhotoAdapter error", "contacts is null");
 
+        if(_storage == null)
+            Log.e("PhotoAdapter error", "_storage is null");
+
+        mContacts = contacts;
+        mStorage = _storage;
 
     }
 
@@ -69,8 +66,11 @@ public class PhotosAdapter extends
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        context = parent.getContext();
-        LayoutInflater inflater = LayoutInflater.from(context);
+        mContext = parent.getContext();
+        if (mContext == null){
+            Log.e("PhotoAdapter error", "mContext is null");
+        }
+        LayoutInflater inflater = LayoutInflater.from(mContext);
 
         View contactView = inflater.inflate(R.layout.item_contact, parent, false);
 
@@ -85,44 +85,33 @@ public class PhotosAdapter extends
         ImageView imgView = viewHolder.imgView;
 
         // Create a storage reference from our app
-        StorageReference storageRef = storage.getReference();
+        StorageReference storageRef = mStorage.getReference();
 
+        if (storageRef == null)
+            Log.e("PhotoAdapter error", "storageRef is null");
 
         String date = contact.getDate();
+
+        if (date == null)
+            Log.e("PhotoAdapter error", "date is null");
+
         String year = date.substring(0,4);
         String month = date.substring(4,6);
         String day = date.substring(6,8);
 
-        Log.d("test333", year);
-        Log.d("test333", month);
-        Log.d("test333", day);
-
-        // Create a reference with an initial file path and name
+        // Create a reference with an initial file path
         StorageReference pathReference = storageRef.child("images/KR/" + year + "/" + month + "/" + day + "/" + contact.getPhotoURL());
 
-        //Log.d("json", mContacts.get(0).getPhotoURL());
         // Load the image using Glide
-
-        GlideApp.with(context)
+        GlideApp.with(mContext)
                 .load(pathReference)
                 .into(imgView);
 
-
         TextView textView1 = viewHolder.textView1;
         TextView textView2 = viewHolder.textView2;
-        textView1.setText((CharSequence) contact.getPrice());
-        textView2.setText((CharSequence) contact.getDetail());
+        textView1.setText(contact.getPrice());
+        textView2.setText(contact.getDetail());
 
-       /* Button button = viewHolder.messageButton;
-
-        if (contact.isOnline()) {
-            button.setText("Message");
-            button.setEnabled(true);
-        }
-        else {
-            button.setText("Offline");
-            button.setEnabled(false);
-        }*/
     }
 
     @Override

@@ -1,58 +1,31 @@
 package com.salejung_android;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.Registry;
-import com.bumptech.glide.annotation.GlideModule;
-import com.bumptech.glide.module.AppGlideModule;
-import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.net.ssl.HttpsURLConnection;
 
 
 /**
@@ -63,13 +36,14 @@ public class SearchActivity extends AppCompatActivity {
 
     Locale systemLocale = null;
     String BASE_URL = "https://salejung-dev.herokuapp.com/latlng/post/";
-    RequestQueue queue = null;
 
     String lat = null;
     String lng = null;
-    JSONArray jsonArray = null;
 
     FirebaseStorage storage = null;
+
+    final String LAT_NULL = "no lat";
+    final String LNG_NULL = "no lng";
 
 
 
@@ -81,8 +55,17 @@ public class SearchActivity extends AppCompatActivity {
         systemLocale = getApplicationContext().getResources().getConfiguration().locale;
 
         SharedPreferences sharedPreferences = getSharedPreferences("setting", 0);
-        lat = sharedPreferences.getString("lat", "no lng");
-        lng = sharedPreferences.getString("lng", "no lng");
+        lat = sharedPreferences.getString("lat", LAT_NULL);
+        lng = sharedPreferences.getString("lng", LNG_NULL);
+
+        if(lat == LAT_NULL || lat == null) {
+            Log.e("SearchActivity", "lat is null");
+        }
+
+        if(lng == LNG_NULL || lng == null) {
+            Log.e("SearchActivity", "lng is null");
+        }
+
 
 
         HashMap<String, String>  params = new HashMap<>();
@@ -90,6 +73,9 @@ public class SearchActivity extends AppCompatActivity {
         params.put("lng", lng);
 
         storage = FirebaseStorage.getInstance();
+
+        if (storage == null)
+            Log.e("SearchActivity", "storage is null");
 
         LatLngPostTask task = new LatLngPostTask();
         task.execute(params);
@@ -101,35 +87,32 @@ public class SearchActivity extends AppCompatActivity {
 
         protected String doInBackground(Map<String, String>... params) {
             String response = send(params[0], BASE_URL);
-
-            try {
-                jsonArray = new JSONArray(response);
-                //json.getJSONObject(0);
-                //Log.i("test4", json.getJSONObject(0).getString("photo"));
-                //Log.i("test5", json.getJSONObject(0).getString("price"));
-                //Log.i("test6", json.getJSONObject(0).getString("detail"));
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            Log.d("IMAGE_INFO_GET2", response);
-
             return response;
         }
 
         @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
+        protected void onPostExecute(String response) {
+            super.onPostExecute(response);
 
-            RecyclerView rvItems = (RecyclerView) findViewById(R.id.rvContacts);
-            List<Photo> allContacts = null;
+            JSONArray jsonArray = null;
             try {
-                allContacts = Photo.createContactsList(jsonArray.length(), 0, jsonArray);
-                Log.d("test2222", allContacts.get(0).getPhotoURL());
+                jsonArray = new JSONArray(response);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
+            RecyclerView rvItems = (RecyclerView) findViewById(R.id.rvContacts);
+            List<Photo> allContacts = null;
+
+            try {
+                allContacts = Photo.createContactsList(jsonArray.length(), 0, jsonArray);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            if (allContacts == null)
+                Log.e("SearchActivity", "allContacts is null");
+
             final PhotosAdapter adapter = new PhotosAdapter(allContacts, storage);
             rvItems.setAdapter(adapter);
             final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(SearchActivity.this);
@@ -139,7 +122,6 @@ public class SearchActivity extends AppCompatActivity {
             EndlessRecyclerViewScrollListener scrollListener = new EndlessRecyclerViewScrollListener(linearLayoutManager) {
                 @Override
                 public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                    //Log.i("TEST1", "hello world1");
                     final int curSize = adapter.getItemCount();
                     view.post(new Runnable() {
                         @Override
