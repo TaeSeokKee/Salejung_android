@@ -34,6 +34,24 @@
         android:padding="10dip"
         android:text="@string/btn_sign_out"/>
 
+    <Button
+        android:id="@+id/btn_fcm_add_or_change"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dip"
+        android:padding="10dip"
+        android:text="@string/btn_fcm_add_or_change"/>
+
+    <Button
+        android:id="@+id/btn_fcm_remove"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dip"
+        android:padding="10dip"
+        android:text="@string/btn_fcm_remove"/>
+
 
 </LinearLayout>
 

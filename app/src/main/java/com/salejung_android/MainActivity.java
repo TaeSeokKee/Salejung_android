@@ -55,6 +55,25 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        /*final Button btn_fcm_add_or_change = findViewById(R.id.btn_fcm_add_or_change);
+        btn_sign_out.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (btn_fcm_add_or_change.getId() == R.id.btn_fcm_add_or_change) {
+                    AuthUI.getInstance()
+                            .signOut(MainActivity.this)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    // user is now signed out
+                                    startActivity(new Intent(MainActivity.this, LocationForFCMActivity.class));
+                                    finish();
+                                    return;
+                                }
+                            });
+                }
+            }
+        });*/
     }
 }
 

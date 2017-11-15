@@ -38,8 +38,10 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -52,6 +54,8 @@ import com.google.firebase.storage.UploadTask;
 
 
 public class UploadActivity extends AppCompatActivity {
+
+    final String TAG = "UploadActivity";
 
     final String IMAGE_INFO_UPLOAD_SUCCESS = "1";
     static final int REQUEST_TAKE_PHOTO = 1;
@@ -105,7 +109,7 @@ public class UploadActivity extends AppCompatActivity {
 
         // Handle case where no address was found.
         if (addresses == null || addresses.size()  == 0) {
-            Log.e("UploadActivity","addresses is null");
+            Log.e(TAG,"addresses is null");
         } else {
             Address address = addresses.get(0);
             addressFragments = new ArrayList<>();
@@ -117,7 +121,7 @@ public class UploadActivity extends AppCompatActivity {
             }
 
             if(addressFragments == null) {
-                Log.e("UploadActivity","addressFragments is null");
+                Log.e(TAG,"addressFragments is null");
             }
         }
 
@@ -177,17 +181,17 @@ public class UploadActivity extends AppCompatActivity {
             mCurrentPhotoPath = image.getAbsolutePath();
 
             if(storageDir == null) {
-                Log.e("UploadActivity","storageDir is null");
+                Log.e(TAG,"storageDir is null");
             }
 
             if(mCurrentPhotoPath == null) {
-                Log.e("UploadActivity","mCurrentPhotoPath is null");
+                Log.e(TAG,"mCurrentPhotoPath is null");
             }
 
             return image;
 
         } else {
-            Log.e("UploadActivity","user is null");
+            Log.e(TAG,"user is null");
             return null;
         }
     }
@@ -214,7 +218,7 @@ public class UploadActivity extends AppCompatActivity {
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
             else {
-                Log.e("UploadActivity","photoFile is null");
+                Log.e(TAG,"photoFile is null");
             }
         }
     }
@@ -294,42 +298,42 @@ public class UploadActivity extends AppCompatActivity {
                         String country = systemLocale.getCountry();
 
                         if(userId == null) {
-                            Log.e("UploadActivity", "userId is null");
+                            Log.e(TAG, "userId is null");
                         }
 
                         if(price == null) {
-                            Log.e("UploadActivity", "price is null");
+                            Log.e(TAG, "price is null");
                         }
 
                         if(detail == null) {
-                            Log.e("UploadActivity", "detail is null");
+                            Log.e(TAG, "detail is null");
                         }
 
                         if(lat == null) {
-                            Log.e("UploadActivity", "lat is null");
+                            Log.e(TAG, "lat is null");
                         }
 
                         if(lng == null) {
-                            Log.e("UploadActivity", "lng is null");
+                            Log.e(TAG, "lng is null");
                         }
 
                         if(fileName == null) {
-                            Log.e("UploadActivity", "fileName is null");
+                            Log.e(TAG, "fileName is null");
                         }
 
                         if(timeStamp == null) {
-                            Log.e("UploadActivity", "timeStamp is null");
+                            Log.e(TAG, "timeStamp is null");
                         }
 
                         if(address == null) {
-                            Log.e("UploadActivity", "address is null");
+                            Log.e(TAG, "address is null");
                         }
 
                         if(country == null) {
-                            Log.e("UploadActivity", "country is null");
+                            Log.e(TAG, "country is null");
                         }
 
-                        params.put("user", userId);
+                        params.put("userId", userId);
                         params.put("price", price);
                         params.put("detail", detail);
                         params.put("lat", lat);
@@ -338,6 +342,25 @@ public class UploadActivity extends AppCompatActivity {
                         params.put("date", timeStamp);
                         params.put("address", address);
                         params.put("country", country);
+
+
+                        Task<GetTokenResult> getToken = null;
+                        if (user != null) {
+                            getToken = user.getIdToken(false);
+                        } else {
+                            Log.e(TAG, "user is null");
+                        }
+
+                        String userIdToken = null;
+                        if (getToken != null) {
+                            userIdToken = getToken.getResult().getToken();
+                        } else {
+                            Log.e(TAG, "getToken is null");
+                        }
+
+                        Log.d(TAG, "userIdToken : " + userIdToken);
+
+                        params.put("userIdToken", userIdToken);
 
                         return params;
                     }

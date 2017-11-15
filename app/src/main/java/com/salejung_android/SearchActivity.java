@@ -3,11 +3,19 @@ package com.salejung_android;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GetTokenResult;
 import com.google.firebase.storage.FirebaseStorage;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -27,13 +35,13 @@ import java.util.Locale;
 import java.util.Map;
 
 
-
 /**
  * Created by xotjr on 2017-11-09.
  */
 
 public class SearchActivity extends AppCompatActivity {
 
+    final String TAG = "SearchActivity";
     Locale systemLocale = null;
     String BASE_URL = "https://salejung-dev.herokuapp.com/latlng/post/";
 
@@ -44,7 +52,6 @@ public class SearchActivity extends AppCompatActivity {
 
     final String LAT_NULL = "no lat";
     final String LNG_NULL = "no lng";
-
 
 
     @Override
@@ -58,30 +65,65 @@ public class SearchActivity extends AppCompatActivity {
         lat = sharedPreferences.getString("lat", LAT_NULL);
         lng = sharedPreferences.getString("lng", LNG_NULL);
 
-        if(lat == LAT_NULL || lat == null) {
+        if (lat == LAT_NULL || lat == null) {
             Log.e("SearchActivity", "lat is null");
         }
 
-        if(lng == LNG_NULL || lng == null) {
+        if (lng == LNG_NULL || lng == null) {
             Log.e("SearchActivity", "lng is null");
         }
 
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Log.e(TAG, "user is null");
+        }
+
+        assert user != null;
+        final String userId = user.getUid();
+        if (userId == null) {
+            Log.e(TAG, "userId is null");
+        }
+
+        Task<GetTokenResult> getToken = user.getIdToken(false);
+        getToken.addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
+            @Override
+            public void onComplete(@NonNull Task<GetTokenResult> task) {
+                if (task.isSuccessful()) {
+                    // Task completed successfully
+                    GetTokenResult result = task.getResult();
+                    String userIdToken = result.getToken();
+                    if (userIdToken == null) {
+                        Log.e(TAG, "token is null");
+                    }
+
+                    Log.d(TAG, "userId : " + userId);
+                    Log.d(TAG, "userIdToken : " + userIdToken);
+
+                    HashMap<String, String> params = new HashMap<>();
+                    params.put("lat", lat);
+                    params.put("lng", lng);
+                    params.put("userId", userId);
+                    params.put("userIdToken", userIdToken);
+
+                    storage = FirebaseStorage.getInstance();
+
+                    if (storage == null)
+                        Log.e("SearchActivity", "storage is null");
+
+                    LatLngPostTask postTask = new LatLngPostTask();
+                    postTask.execute(params);
 
 
-        HashMap<String, String>  params = new HashMap<>();
-        params.put("lat", lat);
-        params.put("lng", lng);
-
-        storage = FirebaseStorage.getInstance();
-
-        if (storage == null)
-            Log.e("SearchActivity", "storage is null");
-
-        LatLngPostTask task = new LatLngPostTask();
-        task.execute(params);
-
-
+                } else {
+                    // Task failed with an exception
+                    Exception exception = task.getException();
+                    assert exception != null;
+                    exception.getStackTrace();
+                }
+            }
+        });
     }
+
 
     class LatLngPostTask extends AsyncTask<Map<String, String>, Integer, String> {
 
@@ -135,7 +177,7 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
-    private String send (Map < String, String > map, String addr){
+    private String send(Map<String, String> map, String addr) {
         String response = "";
 
         try {
