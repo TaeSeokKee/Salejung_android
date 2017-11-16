@@ -1,9 +1,12 @@
 package com.salejung_android;
 
-import android.Manifest;
+
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
@@ -17,20 +20,32 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
-import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Created by xotjr on 2017-11-14.
+ * Created by xotjr on 2017-11-15.
  */
 
 public class LocationForFCMActivity extends FragmentActivity implements OnMapReadyCallback {
 
     final String TAG = "LocationForFCMActivity";
     // why double can't has null value?? So I choose.
-    private double LOCATION_NULL = 9999.9999;
+
+    private double LOCATION_NULL = 999.999;
+    final String FCM_DB_COLLECTION_NAME = "fcm_topic";
+    final String FCM_DB_FIELD_NAME = "topic";
 
     private GoogleMap mMap;
     private static final int MY_LOCATION_REQUEST_CODE = 2;
@@ -39,19 +54,17 @@ public class LocationForFCMActivity extends FragmentActivity implements OnMapRea
     private double mLat = LOCATION_NULL;
     private double mLng = LOCATION_NULL;
 
-    final double NULL_DOUBLE = 999.999;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_location_for_fcm);
+        setContentView(R.layout.activity_location_for_subscribe);
 
-        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            Log.w(TAG, "user is null");
+            // User is signed in
+        } else {
+            // No user is signed in
+
             Intent intent = new Intent(LocationForFCMActivity.this, LoginActivity.class);
             intent.putExtra("returnActivity", "LocationForFCMActivity");
             startActivity(intent);
@@ -64,47 +77,95 @@ public class LocationForFCMActivity extends FragmentActivity implements OnMapRea
                 .findFragmentById(R.id.map_setLoaction);
         mapFragment.getMapAsync(this);
 
-        // add or edit FCM Topic
+
+        /*
+        Save user's new FCM subscribe topic info to DB which is Firestore.
+        Saved Topic Info used to unsubscribe previous topic when user change subscribe topic to new one.
+        subscribe topic change scenario : when user change topic, FCM server should unsubscribe previous topic and then subscribe new topic.
+        */
+
         final Button btn = findViewById(R.id.btn_regist_fcm_topic);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mLat != LOCATION_NULL && mLng != LOCATION_NULL) {
+                    /*
+                    Make new topic to subscribe FCM.
+                    Topic is coordinate value. Sum of string lng , lat.
+                    FCM notification send massage to near place.
+                     Topic is divided by 500m distnace which is coordinate 0.005.
+                    */
+                    float mLat_round = (float) (Math.round(mLat*100d) / 100d);
+                    float mLng_round = (float) (Math.round(mLng*100d) / 100d);
 
-                    // TODO : make newTopic
+                    float mLat_ceil = (float) ((int)(mLat * 100) / 100.0);
+                    float mLng_ceil = (float) ((int)(mLng * 100) / 100.0);
 
-                    double mLat_round = Math.round(mLat*100d) / 100d;
-                    double mLng_round = Math.round(mLng*100d) / 100d;
+                    Log.d(TAG, Double.toString(mLat));
+                    Log.d(TAG, Double.toString(mLng));
+                    Log.d(TAG, Float.toString(mLat_round));
+                    Log.d(TAG, Float.toString(mLng_round));
+                    Log.d(TAG, Float.toString(mLat_ceil));
+                    Log.d(TAG, Float.toString(mLng_ceil));
 
-                    DecimalFormat form = new DecimalFormat("#.###");
-                    double mLat_ceil = Double.parseDouble(form.format(mLat));
-                    double mLng_ceil = Double.parseDouble(form.format(mLng));
-
-                    double mLat_for_fcm_topic = NULL_DOUBLE;
-                    double mLng_for_fcm_topic = NULL_DOUBLE;
+                    float mLat_for_fcm_topic;
+                    float mLng_for_fcm_topic;
 
                     if (mLat_ceil == mLat_round) {
-                        mLat_for_fcm_topic = mLat_ceil;
+                        mLat_for_fcm_topic = mLat_ceil + (float)0.000;
                     } else {
-                        mLat_for_fcm_topic = mLat_ceil + 0.005;
+                        if (mLat_ceil >= 0){
+                            mLat_for_fcm_topic = mLat_ceil + (float)0.005;
+                        } else {
+                            mLat_for_fcm_topic = mLat_ceil - (float)0.005;
+                        }
                     }
 
                     if (mLng_ceil == mLng_round) {
-                        mLng_for_fcm_topic = mLat_ceil;
+                        mLng_for_fcm_topic = mLng_ceil + (float)0.000;
                     } else {
-                        mLng_for_fcm_topic = mLat_ceil + 0.005;
+                        if (mLng_ceil >= 0){
+                            mLng_for_fcm_topic = mLng_ceil + (float)0.0050;
+                        } else {
+                            mLng_for_fcm_topic = mLng_ceil - (float)0.0050;
+                        }
                     }
 
-                    StringBuffer strBuffer1 = new StringBuffer(form.format(mLng_for_fcm_topic));
-                    StringBuffer strBuffer2 = new StringBuffer(form.format(mLat_for_fcm_topic));
-                    String _newTopic= strBuffer1.append(strBuffer2).toString();
+                    mLng_for_fcm_topic = (float) ((int)(mLng_for_fcm_topic * 1000) / 1000.0);
+                    mLat_for_fcm_topic = (float) ((int)(mLat_for_fcm_topic * 1000) / 1000.0);
+
+                    StringBuffer strBuffer1 = new StringBuffer(Float.toString(mLng_for_fcm_topic));
+                    StringBuffer strBuffer2 = new StringBuffer(Float.toString(mLat_for_fcm_topic));
+                    String _newTopic= strBuffer1.append("_").append(strBuffer2).toString();
 
                     final String newTopic = _newTopic;
 
+                    Log.d(TAG, "newTopic : " + newTopic);
 
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
+                    String userId = null;
+                    if (user != null) {
+                        userId = user.getUid();
+                    } else {
+                        Log.e(TAG, "user is null");
+                    }
+
+                    // Access a Cloud Firestore instance from your Activity
+                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+                    //set
+                    Map<String, String> data = new HashMap<>();
+                    data.put(FCM_DB_FIELD_NAME, newTopic);
+
+                    if (userId != null){
+                        // set userFCMTopicInfo
+                        changeOrAddFCMTopic(db, FCM_DB_COLLECTION_NAME, userId, data);
+                    }
+                } else {
+                    // TODO
+                    Log.e("Coordinate error", "mLat mLng is null");
                 }
-                Log.e("Coordinate error", "mLat mLng is null");
             }
         });
     }
@@ -113,9 +174,9 @@ public class LocationForFCMActivity extends FragmentActivity implements OnMapRea
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == MY_LOCATION_REQUEST_CODE) {
             if (permissions.length == 1 &&
-                    permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION &&
+                    permissions[0] == android.Manifest.permission.ACCESS_FINE_LOCATION &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     // TODO: Consider calling
                     //    ActivityCompat#requestPermissions
                     // here to request the missing permissions, and then overriding
@@ -152,12 +213,14 @@ public class LocationForFCMActivity extends FragmentActivity implements OnMapRea
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         // If there is no location permission, try to get location permission.
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         } else {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_LOCATION_REQUEST_CODE);
+
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_LOCATION_REQUEST_CODE);
         }
 
         // set location data. (lat, lng)
@@ -177,5 +240,55 @@ public class LocationForFCMActivity extends FragmentActivity implements OnMapRea
         // There is 2 reason.
         // First, There is a case that User may touch "next button" at first time. In that case, mLat, mLng have trash values.
         // Second, For User can find present location more easily.
+    }
+
+    /*
+    subscribe topic change scenario : when user request add or change topic, first check topic info DB.
+    If there is a previous subscribe topic info in DB, unsubscribe previous topic, update topic info DB and subscribe to new topic.
+    If there is no previous subscribe topic info in DB, skip unsubscribtion, update topic info DB and subscribe to new topic.
+    */
+    private void changeOrAddFCMTopic(final FirebaseFirestore db, final String collectionName, final String documentName, final Map<String, String> data) {
+
+        DocumentReference docRef = db.collection(collectionName).document(documentName);
+        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Log.d(TAG, "DocumentSnapshot data: " + task.getResult().getData());
+                        String userTopic = (String) task.getResult().getData().get(FCM_DB_FIELD_NAME);
+                        FirebaseMessaging.getInstance().unsubscribeFromTopic(userTopic);
+                        subscribeFCMTopicAfterSaveTopicInfo(db, collectionName, documentName, data);
+                    } else {
+                        Log.d(TAG, "No such document");
+                        subscribeFCMTopicAfterSaveTopicInfo(db, collectionName, documentName, data);
+                    }
+                } else {
+                    Log.d(TAG, "get failed with ", task.getException());
+                }
+            }
+        });
+    }
+
+
+    // Save user's new FCM subscribe topic info to DB which is Firestore.
+    // And subscribe to new topic
+    private void subscribeFCMTopicAfterSaveTopicInfo(final FirebaseFirestore db, final String collectionName, final String documentName, final Map<String, String> data) {
+        db.collection(collectionName).document(documentName)
+                .set(data)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully written!");
+                        FirebaseMessaging.getInstance().subscribeToTopic(data.get(FCM_DB_FIELD_NAME));
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing document", e);
+                    }
+                });
     }
 }

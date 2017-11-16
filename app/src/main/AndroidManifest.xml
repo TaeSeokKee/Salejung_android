@@ -68,6 +68,11 @@
             android:name=".SearchActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
 
+        <activity
+            android:name=".LocationForFCMActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
+
+
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.

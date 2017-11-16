@@ -35,22 +35,22 @@
         android:text="@string/btn_sign_out"/>
 
     <Button
-        android:id="@+id/btn_fcm_add_or_change"
+        android:id="@+id/btn_subscribe"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dip"
         android:padding="10dip"
-        android:text="@string/btn_fcm_add_or_change"/>
+        android:text="@string/btn_subscribe"/>
 
     <Button
-        android:id="@+id/btn_fcm_remove"
+        android:id="@+id/btn_unsubscribe"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dip"
         android:padding="10dip"
-        android:text="@string/btn_fcm_remove"/>
+        android:text="@string/btn_unsubscribe"/>
 
 
 </LinearLayout>

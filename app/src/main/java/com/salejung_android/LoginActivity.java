@@ -68,6 +68,13 @@ public class LoginActivity extends AppCompatActivity {
                     finish();
                     return;
                 }
+                // If login triggered by LocationForFCMActivity.
+                else if(returnActivity.equals("LocationForFCMActivity")) {
+                    Intent intent = new Intent(LoginActivity.this, LocationForFCMActivity.class);
+                    startActivity(intent);
+                    finish();
+                    return;
+                }
 
             } else {
                 // Sign in failed

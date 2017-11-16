@@ -3,8 +3,8 @@
     <string name="btn_upload">Go to Upload</string>
     <string name="btn_search">Go to search</string>
     <string name="btn_sign_out">sign out</string>
-    <string name="btn_fcm_add_or_change">add/change notification</string>
-    <string name="btn_fcm_remove">remove notification</string>
+    <string name="btn_subscribe">apply notification</string>
+    <string name="btn_unsubscribe">cancel notification</string>
 
 
     <string name="app_name">Salejung</string>
@@ -20,7 +20,4 @@
 
 
     <string name="btn_regist_fcm_topic">등록</string>
-
-
-
 </resources>
