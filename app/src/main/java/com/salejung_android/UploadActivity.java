@@ -273,6 +273,7 @@ public class UploadActivity extends AppCompatActivity {
                                 }
                                 else {
                                     Toast.makeText(getApplicationContext(), "Upload fail", Toast.LENGTH_LONG).show();
+                                    // TODO : delete uploded photo.
                                 }
                             }
                         },
@@ -301,11 +302,11 @@ public class UploadActivity extends AppCompatActivity {
                             Log.e(TAG, "userId is null");
                         }
 
-                        if(price == null) {
+                        if(price.equals("")) {
                             Log.e(TAG, "price is null");
                         }
 
-                        if(detail == null) {
+                        if(detail.equals("")) {
                             Log.e(TAG, "detail is null");
                         }
 
@@ -342,6 +343,18 @@ public class UploadActivity extends AppCompatActivity {
                         params.put("date", timeStamp);
                         params.put("address", address);
                         params.put("country", country);
+
+                        FCMTopicMaker topicMaker = new FCMTopicMaker(
+                                Double.parseDouble(lng),
+                                Double.parseDouble(lat));
+
+                        String topic = topicMaker.makeTopic();
+
+                        if (topic == null) {
+                            Log.e(TAG, "topic is null");
+                        }
+
+                        params.put("topic", topic);
 
 
                         Task<GetTokenResult> getToken = null;

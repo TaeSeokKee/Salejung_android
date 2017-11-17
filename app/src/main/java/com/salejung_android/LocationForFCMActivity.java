@@ -88,57 +88,19 @@ public class LocationForFCMActivity extends FragmentActivity implements OnMapRea
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mLat != LOCATION_NULL && mLng != LOCATION_NULL) {
+                if (mLng != LOCATION_NULL && mLat != LOCATION_NULL) {
                     /*
                     Make new topic to subscribe FCM.
                     Topic is coordinate value. Sum of string lng , lat.
                     FCM notification send massage to near place.
                      Topic is divided by 500m distnace which is coordinate 0.005.
                     */
-                    float mLat_round = (float) (Math.round(mLat*100d) / 100d);
-                    float mLng_round = (float) (Math.round(mLng*100d) / 100d);
+                    FCMTopicMaker topicMaker = new FCMTopicMaker(mLng, mLat);
+                    String newTopic = topicMaker.makeTopic();
 
-                    float mLat_ceil = (float) ((int)(mLat * 100) / 100.0);
-                    float mLng_ceil = (float) ((int)(mLng * 100) / 100.0);
-
-                    Log.d(TAG, Double.toString(mLat));
-                    Log.d(TAG, Double.toString(mLng));
-                    Log.d(TAG, Float.toString(mLat_round));
-                    Log.d(TAG, Float.toString(mLng_round));
-                    Log.d(TAG, Float.toString(mLat_ceil));
-                    Log.d(TAG, Float.toString(mLng_ceil));
-
-                    float mLat_for_fcm_topic;
-                    float mLng_for_fcm_topic;
-
-                    if (mLat_ceil == mLat_round) {
-                        mLat_for_fcm_topic = mLat_ceil + (float)0.000;
-                    } else {
-                        if (mLat_ceil >= 0){
-                            mLat_for_fcm_topic = mLat_ceil + (float)0.005;
-                        } else {
-                            mLat_for_fcm_topic = mLat_ceil - (float)0.005;
-                        }
+                    if (newTopic == null) {
+                        Log.e(TAG, "newTopic is null");
                     }
-
-                    if (mLng_ceil == mLng_round) {
-                        mLng_for_fcm_topic = mLng_ceil + (float)0.000;
-                    } else {
-                        if (mLng_ceil >= 0){
-                            mLng_for_fcm_topic = mLng_ceil + (float)0.0050;
-                        } else {
-                            mLng_for_fcm_topic = mLng_ceil - (float)0.0050;
-                        }
-                    }
-
-                    mLng_for_fcm_topic = (float) ((int)(mLng_for_fcm_topic * 1000) / 1000.0);
-                    mLat_for_fcm_topic = (float) ((int)(mLat_for_fcm_topic * 1000) / 1000.0);
-
-                    StringBuffer strBuffer1 = new StringBuffer(Float.toString(mLng_for_fcm_topic));
-                    StringBuffer strBuffer2 = new StringBuffer(Float.toString(mLat_for_fcm_topic));
-                    String _newTopic= strBuffer1.append("_").append(strBuffer2).toString();
-
-                    final String newTopic = _newTopic;
 
                     Log.d(TAG, "newTopic : " + newTopic);
 
@@ -161,7 +123,10 @@ public class LocationForFCMActivity extends FragmentActivity implements OnMapRea
                     if (userId != null){
                         // set userFCMTopicInfo
                         changeOrAddFCMTopic(db, FCM_DB_COLLECTION_NAME, userId, data);
+                    } else {
+                        Log.e(TAG, "userId is null");
                     }
+
                 } else {
                     // TODO
                     Log.e("Coordinate error", "mLat mLng is null");

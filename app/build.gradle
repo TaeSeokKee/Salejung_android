@@ -13,6 +13,7 @@ android {
         // firebase
         resConfigs "auto"
 
+        // firestore version 3.0.1 need it.
         multiDexEnabled true
     }
     buildTypes {
