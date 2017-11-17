@@ -64,6 +64,9 @@ dependencies {
     // FirebaseUI for Cloud Firestore
     compile 'com.firebaseui:firebase-ui-firestore:3.1.0'
 
+    // FCM handler
+    compile 'com.firebase:firebase-jobdispatcher:0.6.0'
+
 }
 
 // firebase
