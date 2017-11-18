@@ -14,14 +14,12 @@ import java.util.List;
 
 public class Photo {
     private String mPhotoFilePath;
-    private String mPrice;
     private String mDetail;
     private String mDate;
     private String mCountry;
 
-    public Photo(String photoFilePath, String price, String detail, String date, String country) {
+    public Photo(String photoFilePath, String detail, String date, String country) {
         mPhotoFilePath = photoFilePath;
-        mPrice = price;
         mDetail = detail;
         mDate = date;
         mCountry = country;
@@ -29,10 +27,6 @@ public class Photo {
 
     public String getPhotoFilePath() {
         return mPhotoFilePath;
-    }
-
-    public String getPrice() {
-        return mPrice;
     }
 
     public String getDetail() { return mDetail; }
@@ -48,14 +42,12 @@ public class Photo {
         for (int i = 0; i <= numContacts-1; i++) {
             contacts.add(new Photo(
                     jsonArray.getJSONObject(i).getString("photoFilePath"),
-                    jsonArray.getJSONObject(i).getString("price"),
                     jsonArray.getJSONObject(i).getString("detail"),
                     jsonArray.getJSONObject(i).getString("date"),
                     jsonArray.getJSONObject(i).getString("country")
                     ));
 
             Log.d("json", contacts.get(i).getPhotoFilePath());
-            Log.d("json", contacts.get(i).getPrice());
             Log.d("json", contacts.get(i).getDetail());
             Log.d("json", contacts.get(i).getDate());
             Log.d("json", contacts.get(i).getCountry());

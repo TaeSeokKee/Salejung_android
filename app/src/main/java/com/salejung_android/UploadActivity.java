@@ -143,7 +143,7 @@ public class UploadActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Todo : not only imagePath, need also price, comment, lat and lng's null check.
+                // Todo : not only imagePath, need also detail(comment), lat and lng's null check.
                 if (photoURI != null) {
                     try {
                         imageUpload();
@@ -290,20 +290,14 @@ public class UploadActivity extends AppCompatActivity {
                     protected Map<String, String> getParams()
                     {
                         Map<String, String>  params = new HashMap<>();
-                        EditText priceText = findViewById(R.id.price);
                         EditText detailText = findViewById(R.id.detail);
 
-                        String price = priceText.getText().toString();
                         String detail = detailText.getText().toString();
                         String address = addressFragments.get(0);
                         String country = systemLocale.getCountry();
 
                         if(userId == null) {
                             Log.e(TAG, "userId is null");
-                        }
-
-                        if(price.equals("")) {
-                            Log.e(TAG, "price is null");
                         }
 
                         if(detail.equals("")) {
@@ -335,7 +329,6 @@ public class UploadActivity extends AppCompatActivity {
                         }
 
                         params.put("userId", userId);
-                        params.put("price", price);
                         params.put("detail", detail);
                         params.put("lat", lat);
                         params.put("lng", lng);

@@ -50,15 +50,10 @@ public class BoardActivity extends AppCompatActivity {
         // [START handle_data_extras]
         if (getIntent().getExtras() != null) {
             String photoFilePath = (String) getIntent().getExtras().get("photoFilePath");
-            String price = (String) getIntent().getExtras().get("price");
             String detail = (String) getIntent().getExtras().get("detail");
 
             if (photoFilePath == null) {
                 Log.e(TAG, "photoFilePath is null");
-            }
-
-            if (price == null) {
-                Log.e(TAG, "price is null");
             }
 
             if (detail == null) {
@@ -66,11 +61,9 @@ public class BoardActivity extends AppCompatActivity {
             }
 
             Log.d(TAG, "photoFilePath : " + photoFilePath);
-            Log.d(TAG, "price : " + price);
             Log.d(TAG, "detail : " + detail);
 
             final ImageView photoView = (ImageView) findViewById(R.id.imgView1);
-            final TextView priceView = (TextView) findViewById(R.id.price1);
             final TextView detailView = (TextView) findViewById(R.id.detail1);
 
             FirebaseStorage mStorage = FirebaseStorage.getInstance();;
@@ -87,7 +80,6 @@ public class BoardActivity extends AppCompatActivity {
                     .load(pathReference)
                     .into(photoView);
 
-            priceView.setText(price);
             detailView.setText(detail);
         }
         // [END handle_data_extras]

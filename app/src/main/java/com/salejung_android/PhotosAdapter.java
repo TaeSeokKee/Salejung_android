@@ -59,7 +59,6 @@ public class PhotosAdapter extends
             super(itemView);
 
             imgView = (ImageView) itemView.findViewById(R.id.imgView1);
-            textView1 = (TextView) itemView.findViewById(R.id.price1);
             textView2 = (TextView) itemView.findViewById(R.id.detail1);
         }
     }
@@ -97,7 +96,6 @@ public class PhotosAdapter extends
 
         TextView textView1 = viewHolder.textView1;
         TextView textView2 = viewHolder.textView2;
-        textView1.setText(contact.getPrice());
         textView2.setText(contact.getDetail());
 
     }

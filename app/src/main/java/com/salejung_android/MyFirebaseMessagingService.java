@@ -107,11 +107,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Intent intent = new Intent(this, BoardActivity.class);
 
         Log.d(TAG, "photoFilePath : " + messageBody.get("photoFilePath"));
-        Log.d(TAG, "price : " + messageBody.get("price"));
         Log.d(TAG, "detail : " + messageBody.get("detail"));
 
         intent.putExtra("photoFilePath", messageBody.get("photoFilePath"));
-        intent.putExtra("price", messageBody.get("price"));
         intent.putExtra("detail", messageBody.get("detail"));
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
