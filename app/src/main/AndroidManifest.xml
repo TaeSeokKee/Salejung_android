@@ -72,6 +72,10 @@
             android:name=".LocationForFCMActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
 
+        <activity
+            android:name=".BoardActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
+
 
 
         <!--

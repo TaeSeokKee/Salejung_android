@@ -233,7 +233,7 @@ public class UploadActivity extends AppCompatActivity {
         String[] splitedPath = mCurrentPhotoPath.split("/");
         fileName = splitedPath[splitedPath.length - 1];
 
-        String filePath = storageFileField + "/"
+        final String filePath = storageFileField + "/"
                 + systemLocale.getCountry() + "/"
                 + new SimpleDateFormat("yyyy/MM/dd/", systemLocale).format(new Date())
                 + fileName;
@@ -339,7 +339,7 @@ public class UploadActivity extends AppCompatActivity {
                         params.put("detail", detail);
                         params.put("lat", lat);
                         params.put("lng", lng);
-                        params.put("photo", fileName);
+                        params.put("photoFilePath", filePath);
                         params.put("date", timeStamp);
                         params.put("address", address);
                         params.put("country", country);

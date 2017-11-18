@@ -2,6 +2,7 @@ package com.salejung_android;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
@@ -14,6 +15,11 @@ import com.firebase.jobdispatcher.GooglePlayDriver;
 import com.firebase.jobdispatcher.Job;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Map;
 
 /**
  * Created by xotjr on 2017-11-15.
@@ -67,7 +73,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
 
-        sendNotification(remoteMessage.getData().get("message"));
+        sendNotification(remoteMessage.getData());
     }
     // [END receive_message]
 
@@ -97,20 +103,28 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      *
      * @param messageBody FCM message body received.
      */
-    private void sendNotification(String messageBody) {
-        Intent intent = new Intent(this, MainActivity.class);
+    private void sendNotification(Map<String, String> messageBody) {
+        Intent intent = new Intent(this, BoardActivity.class);
+
+        Log.d(TAG, "photoFilePath : " + messageBody.get("photoFilePath"));
+        Log.d(TAG, "price : " + messageBody.get("price"));
+        Log.d(TAG, "detail : " + messageBody.get("detail"));
+
+        intent.putExtra("photoFilePath", messageBody.get("photoFilePath"));
+        intent.putExtra("price", messageBody.get("price"));
+        intent.putExtra("detail", messageBody.get("detail"));
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
         String channelId = getString(R.string.default_notification_channel_id);
-        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         //TODO : change icon
                         .setSmallIcon(R.drawable.ic_launcher_background)
-                        .setContentTitle("FCM Message")
-                        .setContentText(messageBody)
+                        .setContentTitle("세일중")
+                        .setContentText(messageBody.get("detail"))
                         .setAutoCancel(true)
                         .setSound(defaultSoundUri)
                         .setContentIntent(pendingIntent);
